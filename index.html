@@ -12,6 +12,42 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
 }
+
+/* =======================
+   PRELOADER
+======================= */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background: #0b3d91;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#typing {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  border-right: 3px solid white;
+  padding-right: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Cursor blink */
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+#typing {
+  animation: blink 1s infinite;
+}
+
+/* =======================
+   MAIN UI
+======================= */
 header {
   background: #0b3d91;
   color: white;
@@ -38,9 +74,16 @@ header {
 
 <body>
 
+<!-- =======================
+     PRELOADER HTML
+======================= -->
+<div id="preloader">
+  <div id="typing"></div>
+</div>
+
 <header>
-  <h3>Groundwater Potential Zoning (BSc Level)</h3>
-  <p>Ado-Odo / Ota LGA – Remote Sensing & Web GIS</p>
+  <h3>Groundwater Potential Zoning</h3>
+  <p>Ado-Odo / Ota LGA – Web GIS</p>
 </header>
 
 <div id="map"></div>
@@ -48,6 +91,30 @@ header {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+// =======================
+// PRELOADER TYPING EFFECT
+// =======================
+const text = "GROUNDWATER EXPLORATION";
+let index = 0;
+const speed = 120;
+
+function typeText() {
+  if (index < text.length) {
+    document.getElementById("typing").textContent += text.charAt(index);
+    index++;
+    setTimeout(typeText, speed);
+  } else {
+    setTimeout(() => {
+      document.getElementById("preloader").style.opacity = "0";
+      document.getElementById("preloader").style.transition = "opacity 1s";
+      setTimeout(() => {
+        document.getElementById("preloader").style.display = "none";
+      }, 1000);
+    }, 800);
+  }
+}
+typeText();
+
 // =======================
 // MAP INITIALIZATION
 // =======================
@@ -58,9 +125,8 @@ const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // =======================
-// DEM OVERLAY (YOUR REAL IMAGE)
+// DEM OVERLAY
 // =======================
-// Place dem.png in the same folder as this HTML file
 const dem = L.imageOverlay(
   'map.jpg',
   [[6.55, 3.05], [6.80, 3.45]],
@@ -68,169 +134,70 @@ const dem = L.imageOverlay(
 );
 
 // =======================
-// DRAINAGE (OSM-BASED – REALISTIC)
+// DRAINAGE (OSM-BASED)
 // =======================
 const drainage = L.geoJSON({
   "type": "FeatureCollection",
   "features": [
-
     {
       "type": "Feature",
       "properties": { "name": "Iju River" },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [3.08, 6.78],
-          [3.12, 6.75],
-          [3.16, 6.72],
-          [3.19, 6.69],
-          [3.22, 6.66]
-        ]
-      }
+      "geometry": { "type": "LineString", "coordinates": [[3.08,6.78],[3.12,6.75],[3.16,6.72],[3.19,6.69],[3.22,6.66]] }
     },
-
     {
       "type": "Feature",
       "properties": { "name": "Atan Stream" },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [3.18, 6.80],
-          [3.21, 6.76],
-          [3.23, 6.72],
-          [3.26, 6.68]
-        ]
-      }
+      "geometry": { "type": "LineString", "coordinates": [[3.18,6.80],[3.21,6.76],[3.23,6.72],[3.26,6.68]] }
     },
-
     {
       "type": "Feature",
       "properties": { "name": "Owode Stream" },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [3.25, 6.77],
-          [3.28, 6.73],
-          [3.30, 6.70],
-          [3.33, 6.67]
-        ]
-      }
+      "geometry": { "type": "LineString", "coordinates": [[3.25,6.77],[3.28,6.73],[3.30,6.70],[3.33,6.67]] }
     },
-
     {
       "type": "Feature",
       "properties": { "name": "Ilogbo Stream" },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [3.05, 6.70],
-          [3.09, 6.67],
-          [3.13, 6.64]
-        ]
-      }
+      "geometry": { "type": "LineString", "coordinates": [[3.05,6.70],[3.09,6.67],[3.13,6.64]] }
     }
-
   ]
-}, {
-  style: {
-    color: "#0066ff",
-    weight: 2
-  },
-  onEachFeature: (feature, layer) => {
-    layer.bindPopup(`<b>${feature.properties.name}</b><br>Drainage (OSM)`);
-  }
+},{
+  style:{ color:"#0066ff", weight:2 },
+  onEachFeature:(f,l)=>l.bindPopup(`<b>${f.properties.name}</b>`)
 });
 
 // =======================
-// LINEAMENTS (STRUCTURAL FEATURES)
+// LINEAMENTS
 // =======================
 const lineaments = L.geoJSON({
   "type":"FeatureCollection",
   "features":[
-    {
-      "type":"Feature",
-      "geometry":{
-        "type":"LineString",
-        "coordinates":[[3.10,6.80],[3.30,6.60]]
-      }
-    },
-    {
-      "type":"Feature",
-      "geometry":{
-        "type":"LineString",
-        "coordinates":[[3.05,6.70],[3.25,6.75]]
-      }
-    }
+    {"type":"Feature","geometry":{"type":"LineString","coordinates":[[3.10,6.80],[3.30,6.60]]}},
+    {"type":"Feature","geometry":{"type":"LineString","coordinates":[[3.05,6.70],[3.25,6.75]]}}
   ]
 },{
-  style:{
-    color:"black",
-    weight:2,
-    dashArray:"6,6"
-  }
+  style:{ color:"black", weight:2, dashArray:"6,6" }
 });
 
 // =======================
-// GROUNDWATER POTENTIAL ZONES
+// GROUNDWATER ZONES
 // =======================
 const gwZones = L.geoJSON({
   "type":"FeatureCollection",
   "features":[
-    {
-      "type":"Feature",
-      "properties":{"zone":"Very High"},
-      "geometry":{
-        "type":"Polygon",
-        "coordinates":[[
-          [3.18,6.72],[3.28,6.72],[3.28,6.64],[3.18,6.64],[3.18,6.72]
-        ]]
-      }
-    },
-    {
-      "type":"Feature",
-      "properties":{"zone":"High"},
-      "geometry":{
-        "type":"Polygon",
-        "coordinates":[[
-          [3.08,6.76],[3.18,6.76],[3.18,6.68],[3.08,6.68],[3.08,6.76]
-        ]]
-      }
-    },
-    {
-      "type":"Feature",
-      "properties":{"zone":"Moderate"},
-      "geometry":{
-        "type":"Polygon",
-        "coordinates":[[
-          [3.25,6.78],[3.35,6.78],[3.35,6.70],[3.25,6.70],[3.25,6.78]
-        ]]
-      }
-    },
-    {
-      "type":"Feature",
-      "properties":{"zone":"Low"},
-      "geometry":{
-        "type":"Polygon",
-        "coordinates":[[
-          [3.05,6.65],[3.15,6.65],[3.15,6.58],[3.05,6.58],[3.05,6.65]
-        ]]
-      }
-    }
+    {"type":"Feature","properties":{"zone":"Very High"},"geometry":{"type":"Polygon","coordinates":[[[3.18,6.72],[3.28,6.72],[3.28,6.64],[3.18,6.64],[3.18,6.72]]]}},
+    {"type":"Feature","properties":{"zone":"High"},"geometry":{"type":"Polygon","coordinates":[[[3.08,6.76],[3.18,6.76],[3.18,6.68],[3.08,6.68],[3.08,6.76]]]}},
+    {"type":"Feature","properties":{"zone":"Moderate"},"geometry":{"type":"Polygon","coordinates":[[[3.25,6.78],[3.35,6.78],[3.35,6.70],[3.25,6.70],[3.25,6.78]]]}},
+    {"type":"Feature","properties":{"zone":"Low"},"geometry":{"type":"Polygon","coordinates":[[[3.05,6.65],[3.15,6.65],[3.15,6.58],[3.05,6.58],[3.05,6.65]]]}}
   ]
 },{
-  style: f => ({
+  style:f=>({
     fillColor:
-      f.properties.zone === "Very High" ? "#006400" :
-      f.properties.zone === "High" ? "#32CD32" :
-      f.properties.zone === "Moderate" ? "#FFD700" :
-      "#DC143C",
-    fillOpacity: 0.55,
-    color: "black",
-    weight: 1
-  }),
-  onEachFeature:(f,l)=>{
-    l.bindPopup(`<b>${f.properties.zone} Groundwater Potential</b>`);
-  }
+      f.properties.zone==="Very High"?"#006400":
+      f.properties.zone==="High"?"#32CD32":
+      f.properties.zone==="Moderate"?"#FFD700":"#DC143C",
+    fillOpacity:0.55,
+    color:"black", weight:1
+  })
 });
 
 // =======================
@@ -238,12 +205,7 @@ const gwZones = L.geoJSON({
 // =======================
 L.control.layers(
   {"OpenStreetMap": osm},
-  {
-    "DEM": dem,
-    "Drainage": drainage,
-    "Lineaments": lineaments,
-    "Groundwater Zones": gwZones
-  }
+  {"DEM": dem,"Drainage": drainage,"Lineaments": lineaments,"Groundwater Zones": gwZones}
 ).addTo(map);
 
 // =======================
@@ -251,8 +213,8 @@ L.control.layers(
 // =======================
 const legend = L.control({position:"bottomright"});
 legend.onAdd = () => {
-  const div = L.DomUtil.create("div","legend");
-  div.innerHTML = `
+  const d = L.DomUtil.create("div","legend");
+  d.innerHTML = `
     <b>Legend</b><br>
     <span style="background:#006400"></span> Very High<br>
     <span style="background:#32CD32"></span> High<br>
@@ -261,12 +223,10 @@ legend.onAdd = () => {
     <span style="border:2px dashed black"></span> Lineament<br>
     <span style="background:#0066ff"></span> Drainage
   `;
-  return div;
+  return d;
 };
 legend.addTo(map);
-
 </script>
 
 </body>
 </html>
-
